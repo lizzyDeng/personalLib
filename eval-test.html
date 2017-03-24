@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<script type="text/javascript">
+  //问题引入：在看node.js的 repl时，发现 执行> 之后，会执行console.log()操作，里面的操作就是eval(),如果没有定义var 则可以去到正确的值，否则返回undefned
+  //提出问题：eval执行时的上下文是什么？
+  //在搜索时发现这么一个说法，如果直接使用eval()函数，那么eval()参数字符串中的代码所访问的变量是eval()语句所在function的那些变量，也即eval()函数所使用的变量环境是“本地变量环境”。如果不直接使用eval()函数，而是使用一个同样指向eval()函数的新变量，那么相应参数字符串中的代码所访问的变量均为全局变量，也即eval()函数所使用的变量环境是“全局变量环境”。
+  //理解为：eval()等效于 this({code})().这个this是evla在定义时的上下文。所以，eval可以访问到父级的变量（通过this），同时自己执行时，是创建了一个context的，因此里面定义的变量，在外部是访问不到的。而没有var，相当于是一个全局的变量，在外部是可以访问到的。
+  console.log(eval("foo = 'bar';")); // bar
+  console.log(eval("var foo = 'bar'; ")); //undefined
+
+  var renamed = eval;  
+  var x = "origin", y; // y = "origin"  
+  function f(){  
+    var x = "new";
+    eval("x += 'Changed';");
+    return x;
+  }
+ function g(){  
+   var y = "new";
+   renamed("y += 'Changed';");
+   return y;
+ }
+console.log(f(), x);//newChanged origin 解释：f(),eval()的上下文为f()的上下文，所以作用域可以访问到new。
+console.log(g(), y);//new undefinedChanged 解释，eval在window上定义的，所以执行时的上下为window，y没有赋值，所以是undefined
+</script>
+</body>
+</html>
